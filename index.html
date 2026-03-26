@@ -151,13 +151,28 @@
 <div id="toast"></div>
 
 <script>
-// ─── PEER CONFIG with public STUN servers ─────────────────────────
+// ─── PEER CONFIG with STUN + free TURN (highly recommended) ─────────────────────────
 const PEER_CONFIG = {
   config: {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:openrelay.metered.ca:80' },
+      {
+        urls: 'turn:openrelay.metered.ca:80',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls: 'turn:openrelay.metered.ca:443',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      }
     ]
   }
 };
@@ -168,7 +183,7 @@ let activeConnections = new Map(); // peerId -> call
 let isViewer = false;
 
 // ─── HELPERS ──────────────────────────────────────────────────────
-function toast(msg, duration = 3000) {
+function toast(msg, duration = 4000) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
@@ -179,13 +194,25 @@ function toast(msg, duration = 3000) {
 function setStatus(state, text) {
   const pill = document.getElementById('statusPill');
   const label = document.getElementById('statusText');
-  pill.className = 'pill pill-' + state;
+  pill.className = `pill pill-${state}`;
   pill.querySelector('.dot').className = 'dot' + (state === 'live' ? ' pulse' : '');
   label.textContent = text;
 }
 
 function updateViewerCount() {
   document.getElementById('viewerCountNum').textContent = activeConnections.size;
+}
+
+// Create a proper silent audio track (helps connection stability)
+function createSilentStream() {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const dest = audioContext.createMediaStreamDestination();
+  oscillator.connect(dest);
+  oscillator.frequency.value = 0; // completely silent
+  oscillator.start();
+  setTimeout(() => oscillator.stop(), 100);
+  return dest.stream;
 }
 
 // ─── BROADCAST ────────────────────────────────────────────────────
@@ -205,7 +232,6 @@ async function startBroadcast() {
     return;
   }
 
-  // If user clicks "Stop sharing" in browser UI
   localStream.getVideoTracks()[0].addEventListener('ended', stopBroadcast);
 
   setStatus('waiting', 'setting up peer…');
@@ -223,8 +249,14 @@ async function startBroadcast() {
   });
 
   peer.on('call', (call) => {
-    // Answer with our screen stream — don't send empty stream
     call.answer(localStream);
+
+    // ICE debugging
+    if (call.peerConnection) {
+      call.peerConnection.oniceconnectionstatechange = () => {
+        console.log(`Broadcaster ICE state for ${call.peer}:`, call.peerConnection.iceConnectionState);
+      };
+    }
 
     call.on('close', () => {
       activeConnections.delete(call.peer);
@@ -233,30 +265,30 @@ async function startBroadcast() {
     });
 
     call.on('error', (err) => {
+      console.error('Call error:', err);
       activeConnections.delete(call.peer);
       updateViewerCount();
     });
 
-    // Only count if this peer isn't already connected
     if (!activeConnections.has(call.peer)) {
       activeConnections.set(call.peer, call);
       updateViewerCount();
       toast('👁 New viewer connected!');
-    } else {
-      // Duplicate call from same peer — close old one, replace
-      activeConnections.get(call.peer).close();
-      activeConnections.set(call.peer, call);
     }
   });
 
   peer.on('error', (err) => {
+    console.error('Peer error:', err);
     setStatus('error', 'error: ' + err.type);
-    toast('Peer error: ' + err.type, 5000);
+    toast('Peer error: ' + err.type, 6000);
   });
 }
 
 function stopBroadcast() {
-  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  if (localStream) {
+    localStream.getTracks().forEach(t => t.stop());
+    localStream = null;
+  }
   activeConnections.forEach(c => c.close());
   activeConnections.clear();
   if (peer) { peer.destroy(); peer = null; }
@@ -284,28 +316,25 @@ function joinStream() {
     const u = new URL(raw);
     const p = u.searchParams.get('watch');
     if (p) hostId = p;
-  } catch {}
+  } catch(e) {}
 
   connectToStream(hostId);
 }
 
 function connectToStream(hostId) {
-  if (isViewer) return; // prevent double connect
+  if (isViewer) return;
   isViewer = true;
 
   const watchBtn = document.getElementById('watchBtn');
   watchBtn.textContent = 'Connecting…';
   watchBtn.disabled = true;
 
-  // Destroy any existing peer first
   if (peer) { peer.destroy(); peer = null; }
 
   peer = new Peer(undefined, PEER_CONFIG);
 
   peer.on('open', () => {
-    // Call broadcaster — send null stream (viewer only)
-    // We create a fake silent audio track so PeerJS doesn't complain
-    const silentStream = new MediaStream();
+    const silentStream = createSilentStream();
     const call = peer.call(hostId, silentStream);
 
     if (!call) {
@@ -314,35 +343,49 @@ function connectToStream(hostId) {
       return;
     }
 
+    // ICE debugging (very useful)
+    if (call.peerConnection) {
+      call.peerConnection.oniceconnectionstatechange = () => {
+        const state = call.peerConnection.iceConnectionState;
+        console.log('Viewer ICE state:', state);
+        if (state === 'failed' || state === 'disconnected') {
+          toast('Connection failed (ICE). Try again or switch networks.', 7000);
+        }
+      };
+    }
+
     call.on('stream', (remoteStream) => {
+      console.log('✅ Remote stream received!', remoteStream.getTracks());
       const video = document.getElementById('remoteVideo');
       video.srcObject = remoteStream;
       document.getElementById('videoContainer').classList.add('visible');
       document.getElementById('joinCard').classList.add('hidden');
       document.getElementById('broadcastCard').classList.add('hidden');
-      toast('Connected! Enjoy the stream 🎬');
+      toast('Connected! Enjoy the stream 🎬', 3000);
     });
 
     call.on('close', () => {
-      toast('Stream ended by broadcaster.', 5000);
-    });
-
-    call.on('error', (err) => {
-      toast('Stream error: ' + err, 5000);
+      toast('Stream ended by broadcaster.', 6000);
       resetViewer();
     });
 
-    // Timeout if no stream after 10s
+    call.on('error', (err) => {
+      console.error('Call error:', err);
+      toast('Stream error: ' + err, 6000);
+      resetViewer();
+    });
+
+    // Longer, friendlier timeout
     setTimeout(() => {
       if (!document.getElementById('videoContainer').classList.contains('visible')) {
-        toast('Timed out — is the stream live?', 5000);
-        resetViewer();
+        toast('Connection is taking a long time. Make sure the broadcaster is still live.', 8000);
       }
-    }, 10000);
+    }, 30000);
   });
 
   peer.on('error', (err) => {
-    toast('Connection failed: ' + err.type, 5000);
+    console.error('Peer error:', err);
+    toast('Connection failed: ' + err.type, 6000);
     resetViewer();
   });
 }
@@ -361,8 +404,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const watchId = params.get('watch');
   if (watchId) {
     document.getElementById('sessionInput').value = watchId;
-    // Small delay to let PeerJS load
-    setTimeout(() => connectToStream(watchId), 500);
+    setTimeout(() => connectToStream(watchId), 600);
   }
 });
 </script>
