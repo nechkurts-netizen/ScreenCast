@@ -92,9 +92,26 @@
   #videoContainer.visible { display: block; }
 
   .video-wrapper { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: #000; box-shadow: 0 0 60px rgba(0,229,255,0.07), 0 0 0 1px rgba(0,229,255,0.05); }
-  video { width: 100%; display: block; max-height: 70vh; background: #000; }
+  video { width: 100%; display: block; max-height: 75vh; background: #000; }
 
   .video-badge { position: absolute; top: 0.75rem; left: 0.75rem; background: rgba(255,59,92,0.9); color: #fff; font-family: 'Space Mono', monospace; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; padding: 0.3rem 0.7rem; border-radius: 6px; display: flex; align-items: center; gap: 0.4rem; text-transform: uppercase; }
+
+  #fullscreenBtn {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    z-index: 10;
+  }
+  #fullscreenBtn:hover { background: rgba(0,0,0,0.9); }
 
   #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(4rem); background: var(--surface); border: 1px solid var(--accent); color: var(--accent); font-family: 'Space Mono', monospace; font-size: 0.75rem; padding: 0.75rem 1.4rem; border-radius: 10px; z-index: 999; opacity: 0; transition: all 0.3s ease; letter-spacing: 0.05em; pointer-events: none; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -144,6 +161,7 @@
     <div class="video-wrapper">
       <video id="remoteVideo" autoplay playsinline></video>
       <div class="video-badge"><div class="dot pulse"></div> LIVE</div>
+      <button id="fullscreenBtn">⛶ Fullscreen</button>
     </div>
   </div>
 </div>
@@ -151,35 +169,23 @@
 <div id="toast"></div>
 
 <script>
-// ─── PEER CONFIG with STUN + free TURN (highly recommended) ─────────────────────────
+// ─── PEER CONFIG with STUN + TURN ─────────────────────────
 const PEER_CONFIG = {
   config: {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
       { urls: 'stun:openrelay.metered.ca:80' },
-      {
-        urls: 'turn:openrelay.metered.ca:80',
-        username: 'openrelayproject',
-        credential: 'openrelayproject'
-      },
-      {
-        urls: 'turn:openrelay.metered.ca:443',
-        username: 'openrelayproject',
-        credential: 'openrelayproject'
-      },
-      {
-        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-        username: 'openrelayproject',
-        credential: 'openrelayproject'
-      }
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
     ]
   }
 };
 
 let peer = null;
 let localStream = null;
-let activeConnections = new Map(); // peerId -> call
+let activeConnections = new Map();
 let isViewer = false;
 
 // ─── HELPERS ──────────────────────────────────────────────────────
@@ -203,13 +209,12 @@ function updateViewerCount() {
   document.getElementById('viewerCountNum').textContent = activeConnections.size;
 }
 
-// Create a proper silent audio track (helps connection stability)
 function createSilentStream() {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   const dest = audioContext.createMediaStreamDestination();
   oscillator.connect(dest);
-  oscillator.frequency.value = 0; // completely silent
+  oscillator.frequency.value = 0;
   oscillator.start();
   setTimeout(() => oscillator.stop(), 100);
   return dest.stream;
@@ -251,10 +256,9 @@ async function startBroadcast() {
   peer.on('call', (call) => {
     call.answer(localStream);
 
-    // ICE debugging
     if (call.peerConnection) {
       call.peerConnection.oniceconnectionstatechange = () => {
-        console.log(`Broadcaster ICE state for ${call.peer}:`, call.peerConnection.iceConnectionState);
+        console.log(`Broadcaster ICE: ${call.peerConnection.iceConnectionState}`);
       };
     }
 
@@ -285,10 +289,7 @@ async function startBroadcast() {
 }
 
 function stopBroadcast() {
-  if (localStream) {
-    localStream.getTracks().forEach(t => t.stop());
-    localStream = null;
-  }
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
   activeConnections.forEach(c => c.close());
   activeConnections.clear();
   if (peer) { peer.destroy(); peer = null; }
@@ -309,7 +310,7 @@ function copyLink() {
 // ─── VIEWER ───────────────────────────────────────────────────────
 function joinStream() {
   const raw = document.getElementById('sessionInput').value.trim();
-  if (!raw) { toast('Paste a stream ID or URL first.'); return; }
+  if (!raw) { toast('Paste a stream ID or full URL first.'); return; }
 
   let hostId = raw;
   try {
@@ -343,24 +344,35 @@ function connectToStream(hostId) {
       return;
     }
 
-    // ICE debugging (very useful)
     if (call.peerConnection) {
       call.peerConnection.oniceconnectionstatechange = () => {
         const state = call.peerConnection.iceConnectionState;
         console.log('Viewer ICE state:', state);
-        if (state === 'failed' || state === 'disconnected') {
-          toast('Connection failed (ICE). Try again or switch networks.', 7000);
+        if (['failed', 'disconnected'].includes(state)) {
+          toast('Connection failed (ICE issue). Try again.', 7000);
         }
       };
     }
 
     call.on('stream', (remoteStream) => {
-      console.log('✅ Remote stream received!', remoteStream.getTracks());
+      console.log('✅ Remote stream received! Tracks:', remoteStream.getTracks());
+
       const video = document.getElementById('remoteVideo');
       video.srcObject = remoteStream;
+      video.muted = false;
+      video.playsInline = true;
+      video.autoplay = true;
+
+      video.onloadedmetadata = () => {
+        console.log('Video metadata loaded —', video.videoWidth + '×' + video.videoHeight);
+        video.play().catch(err => console.error('Play error:', err));
+      };
+
       document.getElementById('videoContainer').classList.add('visible');
       document.getElementById('joinCard').classList.add('hidden');
       document.getElementById('broadcastCard').classList.add('hidden');
+      document.getElementById('fullscreenBtn').style.display = 'block';
+
       toast('Connected! Enjoy the stream 🎬', 3000);
     });
 
@@ -375,10 +387,10 @@ function connectToStream(hostId) {
       resetViewer();
     });
 
-    // Longer, friendlier timeout
+    // Longer timeout
     setTimeout(() => {
       if (!document.getElementById('videoContainer').classList.contains('visible')) {
-        toast('Connection is taking a long time. Make sure the broadcaster is still live.', 8000);
+        toast('Connection is taking a long time. Is the broadcaster still live?', 8000);
       }
     }, 30000);
   });
@@ -396,7 +408,16 @@ function resetViewer() {
   watchBtn.textContent = 'Watch Stream';
   watchBtn.disabled = false;
   if (peer) { peer.destroy(); peer = null; }
+  document.getElementById('fullscreenBtn').style.display = 'none';
 }
+
+// Fullscreen button
+document.getElementById('fullscreenBtn').addEventListener('click', () => {
+  const container = document.getElementById('videoContainer');
+  if (container.requestFullscreen) container.requestFullscreen();
+  else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+  else if (container.msRequestFullscreen) container.msRequestFullscreen();
+});
 
 // ─── AUTO-JOIN FROM URL ────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
