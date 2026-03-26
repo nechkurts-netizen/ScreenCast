@@ -22,373 +22,85 @@
     --red: #ff3b5c;
   }
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    overflow-x: hidden;
-  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; overflow-x: hidden; }
 
-  /* Animated grid background */
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
     background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
 
   body::after {
     content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 30% 20%, rgba(123,47,255,0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(0,229,255,0.06) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
+    position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(123,47,255,0.08) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(0,229,255,0.06) 0%, transparent 50%);
+    pointer-events: none; z-index: 0;
     animation: bgShift 12s ease-in-out infinite alternate;
   }
 
-  @keyframes bgShift {
-    from { transform: translate(0,0); }
-    to   { transform: translate(2%, 1%); }
-  }
+  @keyframes bgShift { from { transform: translate(0,0); } to { transform: translate(2%,1%); } }
 
-  #app {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-  }
+  #app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
 
-  /* ── LOGO ── */
-  .logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.35em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-    opacity: 0.8;
-  }
-
-  h1 {
-    font-size: clamp(2.4rem, 6vw, 4rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    margin-bottom: 0.3rem;
-  }
-
+  .logo { font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.35em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.5rem; opacity: 0.8; }
+  h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; line-height: 1; letter-spacing: -0.03em; margin-bottom: 0.3rem; }
   h1 span { color: var(--accent); }
+  .tagline { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 3rem; }
 
-  .tagline {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    margin-bottom: 3rem;
-  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 2.4rem; width: 100%; max-width: 520px; backdrop-filter: blur(12px); position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.4; }
+  .card-title { font-size: 0.65rem; font-family: 'Space Mono', monospace; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; margin-bottom: 1.4rem; }
 
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem 2.4rem;
-    width: 100%;
-    max-width: 520px;
-    backdrop-filter: blur(12px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0.4;
-  }
-
-  .card-title {
-    font-size: 0.65rem;
-    font-family: 'Space Mono', monospace;
-    letter-spacing: 0.3em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 1.4rem;
-  }
-
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.85rem 1.8rem;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    position: relative;
-    overflow: hidden;
-    letter-spacing: 0.01em;
-  }
-
-  .btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: white;
-    opacity: 0;
-    transition: opacity 0.18s;
-  }
-
+  .btn { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.85rem 1.8rem; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.18s ease; position: relative; overflow: hidden; letter-spacing: 0.01em; }
+  .btn::after { content: ''; position: absolute; inset: 0; background: white; opacity: 0; transition: opacity 0.18s; }
   .btn:hover::after { opacity: 0.07; }
   .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    color: #fff;
-    width: 100%;
-    justify-content: center;
-    font-size: 1.05rem;
-    padding: 1rem;
-  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #fff; width: 100%; justify-content: center; font-size: 1.05rem; padding: 1rem; }
+  .btn-stop { background: rgba(255,59,92,0.12); border: 1px solid rgba(255,59,92,0.35); color: var(--red); width: 100%; justify-content: center; }
+  .btn-copy { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.25); color: var(--accent); font-size: 0.85rem; padding: 0.55rem 1.1rem; flex-shrink: 0; }
+  .btn-view { background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #fff; width: 100%; justify-content: center; font-size: 1.05rem; padding: 1rem; }
 
-  .btn-stop {
-    background: rgba(255,59,92,0.12);
-    border: 1px solid rgba(255,59,92,0.35);
-    color: var(--red);
-    width: 100%;
-    justify-content: center;
-  }
-
-  .btn-copy {
-    background: rgba(0,229,255,0.08);
-    border: 1px solid rgba(0,229,255,0.25);
-    color: var(--accent);
-    font-size: 0.85rem;
-    padding: 0.55rem 1.1rem;
-    flex-shrink: 0;
-  }
-
-  .btn-view {
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    color: #fff;
-    width: 100%;
-    justify-content: center;
-    font-size: 1.05rem;
-    padding: 1rem;
-  }
-
-  /* ── STATUS PILL ── */
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.9rem;
-    border-radius: 999px;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    margin-bottom: 1.4rem;
-  }
-
+  .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.9rem; border-radius: 999px; font-family: 'Space Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em; margin-bottom: 1.4rem; }
   .pill-idle    { background: rgba(90,98,120,0.15); border: 1px solid var(--border); color: var(--muted); }
   .pill-live    { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3); color: var(--green); }
   .pill-waiting { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.3); color: var(--accent); }
   .pill-error   { background: rgba(255,59,92,0.08);  border: 1px solid rgba(255,59,92,0.3);  color: var(--red); }
 
-  .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: currentColor;
-  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .dot.pulse { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.7); } }
 
-  .dot.pulse {
-    animation: pulse 1.4s ease-in-out infinite;
-  }
+  .link-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 1.2rem; }
+  .link-box { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; }
 
-  @keyframes pulse {
-    0%,100% { opacity: 1; transform: scale(1); }
-    50%      { opacity: 0.4; transform: scale(0.7); }
-  }
-
-  /* ── VIEWER LINK ── */
-  .link-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-top: 1.2rem;
-  }
-
-  .link-box {
-    flex: 1;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.6rem 0.9rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--accent);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: 0.02em;
-  }
-
-  /* ── VIEWER COUNT ── */
-  .viewer-count {
-    margin-top: 1rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
+  .viewer-count { margin-top: 1rem; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
   .viewer-count span { color: var(--text); font-weight: 700; }
 
-  /* ── DIVIDER ── */
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin: 2rem 0;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-  }
+  .divider { display: flex; align-items: center; gap: 1rem; margin: 2rem 0; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* ── JOIN INPUT ── */
-  .input-row {
-    display: flex;
-    gap: 0.6rem;
-    margin-bottom: 0.8rem;
-  }
-
-  .input-row input {
-    flex: 1;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.78rem;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.2s;
-    letter-spacing: 0.05em;
-  }
-
+  .input-row { display: flex; gap: 0.6rem; margin-bottom: 0.8rem; }
+  .input-row input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--text); outline: none; transition: border-color 0.2s; letter-spacing: 0.05em; }
   .input-row input:focus { border-color: var(--accent); }
   .input-row input::placeholder { color: var(--muted); }
 
-  /* ── VIDEO ── */
-  #videoContainer {
-    display: none;
-    width: 100%;
-    max-width: 960px;
-    margin-top: 1.5rem;
-  }
-
+  #videoContainer { display: none; width: 100%; max-width: 960px; margin-top: 1.5rem; }
   #videoContainer.visible { display: block; }
 
-  .video-wrapper {
-    position: relative;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: #000;
-    box-shadow: 0 0 60px rgba(0,229,255,0.07), 0 0 0 1px rgba(0,229,255,0.05);
-  }
+  .video-wrapper { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: #000; box-shadow: 0 0 60px rgba(0,229,255,0.07), 0 0 0 1px rgba(0,229,255,0.05); }
+  video { width: 100%; display: block; max-height: 70vh; background: #000; }
 
-  video {
-    width: 100%;
-    display: block;
-    max-height: 70vh;
-    background: #000;
-  }
+  .video-badge { position: absolute; top: 0.75rem; left: 0.75rem; background: rgba(255,59,92,0.9); color: #fff; font-family: 'Space Mono', monospace; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; padding: 0.3rem 0.7rem; border-radius: 6px; display: flex; align-items: center; gap: 0.4rem; text-transform: uppercase; }
 
-  .video-badge {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    background: rgba(255,59,92,0.9);
-    color: #fff;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    padding: 0.3rem 0.7rem;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    text-transform: uppercase;
-  }
+  #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(4rem); background: var(--surface); border: 1px solid var(--accent); color: var(--accent); font-family: 'Space Mono', monospace; font-size: 0.75rem; padding: 0.75rem 1.4rem; border-radius: 10px; z-index: 999; opacity: 0; transition: all 0.3s ease; letter-spacing: 0.05em; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ── TOAST ── */
-  #toast {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%) translateY(4rem);
-    background: var(--surface);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: 'Space Mono', monospace;
-    font-size: 0.75rem;
-    padding: 0.75rem 1.4rem;
-    border-radius: 10px;
-    z-index: 999;
-    opacity: 0;
-    transition: all 0.3s ease;
-    letter-spacing: 0.05em;
-    pointer-events: none;
-  }
-
-  #toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* ── FADE IN ── */
-  .fade-in {
-    animation: fadeIn 0.5s ease both;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -401,28 +113,18 @@
   <!-- BROADCAST CARD -->
   <div class="card fade-in" id="broadcastCard">
     <div class="card-title">⬡ Broadcaster</div>
-
     <div id="statusPill" class="pill pill-idle">
       <div class="dot"></div>
       <span id="statusText">idle</span>
     </div>
-
-    <button class="btn btn-primary" id="startBtn" onclick="startBroadcast()">
-      ▶ Start Streaming
-    </button>
-
-    <button class="btn btn-stop hidden" id="stopBtn" onclick="stopBroadcast()">
-      ■ Stop Stream
-    </button>
-
+    <button class="btn btn-primary" id="startBtn" onclick="startBroadcast()">▶ Start Streaming</button>
+    <button class="btn btn-stop hidden" id="stopBtn" onclick="stopBroadcast()">■ Stop Stream</button>
     <div id="linkSection" class="hidden">
       <div class="link-row">
         <div class="link-box" id="viewerLink">—</div>
         <button class="btn btn-copy" onclick="copyLink()">Copy</button>
       </div>
-      <div class="viewer-count">
-        <span id="viewerCountNum">0</span> viewer(s) connected
-      </div>
+      <div class="viewer-count"><span id="viewerCountNum">0</span> viewer(s) connected</div>
     </div>
   </div>
 
@@ -434,7 +136,7 @@
     <div class="input-row">
       <input type="text" id="sessionInput" placeholder="Paste stream ID or full URL…" />
     </div>
-    <button class="btn btn-view" onclick="joinStream()">Watch Stream</button>
+    <button class="btn btn-view" id="watchBtn" onclick="joinStream()">Watch Stream</button>
   </div>
 
   <!-- VIDEO -->
@@ -449,171 +151,208 @@
 <div id="toast"></div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────
+// ─── PEER CONFIG with public STUN servers ─────────────────────────
 const PEER_CONFIG = {
-  // Using PeerJS cloud (free, public)
-  // For private hosting, swap with your own PeerServer
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+    ]
+  }
 };
 
-// ─── STATE ────────────────────────────────────────────────────────
 let peer = null;
 let localStream = null;
-let connections = [];
-let viewerCount = 0;
+let activeConnections = new Map(); // peerId -> call
+let isViewer = false;
 
 // ─── HELPERS ──────────────────────────────────────────────────────
-function toast(msg, duration = 2500) {
+function toast(msg, duration = 3000) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), duration);
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), duration);
 }
 
 function setStatus(state, text) {
   const pill = document.getElementById('statusPill');
   const label = document.getElementById('statusText');
-  pill.className = 'pill';
-  pill.classList.add('pill-' + state);
-  const dot = pill.querySelector('.dot');
-  dot.className = 'dot' + (state === 'live' ? ' pulse' : '');
+  pill.className = 'pill pill-' + state;
+  pill.querySelector('.dot').className = 'dot' + (state === 'live' ? ' pulse' : '');
   label.textContent = text;
 }
 
-function updateViewerCount(n) {
-  viewerCount = n;
-  document.getElementById('viewerCountNum').textContent = n;
+function updateViewerCount() {
+  document.getElementById('viewerCountNum').textContent = activeConnections.size;
 }
 
 // ─── BROADCAST ────────────────────────────────────────────────────
 async function startBroadcast() {
+  document.getElementById('startBtn').disabled = true;
   setStatus('waiting', 'requesting screen…');
 
   try {
     localStream = await navigator.mediaDevices.getDisplayMedia({
-      video: {
-        width: { ideal: 1920, max: 1920 },
-        height: { ideal: 1080, max: 1080 },
-        frameRate: { ideal: 60, max: 60 },
-        cursor: 'always'
-      },
-      audio: true   // system audio if browser supports
+      video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60 }, cursor: 'always' },
+      audio: true
     });
   } catch (e) {
     setStatus('idle', 'idle');
-    toast('Screen capture cancelled or denied.');
+    document.getElementById('startBtn').disabled = false;
+    toast('Screen capture cancelled.');
     return;
   }
 
-  // Stop stream if user ends sharing via browser UI
-  localStream.getVideoTracks()[0].addEventListener('ended', () => stopBroadcast());
+  // If user clicks "Stop sharing" in browser UI
+  localStream.getVideoTracks()[0].addEventListener('ended', stopBroadcast);
 
-  setStatus('waiting', 'connecting…');
+  setStatus('waiting', 'setting up peer…');
 
   peer = new Peer(undefined, PEER_CONFIG);
 
   peer.on('open', (id) => {
-    setStatus('live', 'live · ' + id.slice(0,8) + '…');
-
+    setStatus('live', 'live');
     const viewerUrl = window.location.href.split('?')[0] + '?watch=' + id;
     document.getElementById('viewerLink').textContent = viewerUrl;
     document.getElementById('linkSection').classList.remove('hidden');
     document.getElementById('startBtn').classList.add('hidden');
     document.getElementById('stopBtn').classList.remove('hidden');
-
-    toast('Stream is live! Share the link.');
+    toast('Stream is live! Share the link 👆');
   });
 
   peer.on('call', (call) => {
+    // Answer with our screen stream — don't send empty stream
     call.answer(localStream);
 
-    call.on('stream', () => {}); // viewer sends nothing back
-
     call.on('close', () => {
-      connections = connections.filter(c => c !== call);
-      updateViewerCount(connections.length);
+      activeConnections.delete(call.peer);
+      updateViewerCount();
+      toast('A viewer disconnected.');
     });
 
-    call.on('error', () => {
-      connections = connections.filter(c => c !== call);
-      updateViewerCount(connections.length);
+    call.on('error', (err) => {
+      activeConnections.delete(call.peer);
+      updateViewerCount();
     });
 
-    connections.push(call);
-    updateViewerCount(connections.length);
-    toast('👁 New viewer connected!');
+    // Only count if this peer isn't already connected
+    if (!activeConnections.has(call.peer)) {
+      activeConnections.set(call.peer, call);
+      updateViewerCount();
+      toast('👁 New viewer connected!');
+    } else {
+      // Duplicate call from same peer — close old one, replace
+      activeConnections.get(call.peer).close();
+      activeConnections.set(call.peer, call);
+    }
   });
 
   peer.on('error', (err) => {
-    setStatus('error', 'error');
-    toast('Connection error: ' + err.type);
+    setStatus('error', 'error: ' + err.type);
+    toast('Peer error: ' + err.type, 5000);
   });
 }
 
 function stopBroadcast() {
-  if (localStream) {
-    localStream.getTracks().forEach(t => t.stop());
-    localStream = null;
-  }
-  connections.forEach(c => c.close());
-  connections = [];
+  if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  activeConnections.forEach(c => c.close());
+  activeConnections.clear();
   if (peer) { peer.destroy(); peer = null; }
-
   setStatus('idle', 'idle');
   document.getElementById('startBtn').classList.remove('hidden');
+  document.getElementById('startBtn').disabled = false;
   document.getElementById('stopBtn').classList.add('hidden');
   document.getElementById('linkSection').classList.add('hidden');
-  updateViewerCount(0);
+  updateViewerCount();
   toast('Stream stopped.');
 }
 
 function copyLink() {
-  const link = document.getElementById('viewerLink').textContent;
-  navigator.clipboard.writeText(link).then(() => toast('Link copied!'));
+  navigator.clipboard.writeText(document.getElementById('viewerLink').textContent)
+    .then(() => toast('Link copied!'));
 }
 
-// ─── VIEW ─────────────────────────────────────────────────────────
+// ─── VIEWER ───────────────────────────────────────────────────────
 function joinStream() {
   const raw = document.getElementById('sessionInput').value.trim();
   if (!raw) { toast('Paste a stream ID or URL first.'); return; }
 
-  // Accept full URL or bare ID
-  let id = raw;
+  let hostId = raw;
   try {
     const u = new URL(raw);
     const p = u.searchParams.get('watch');
-    if (p) id = p;
+    if (p) hostId = p;
   } catch {}
 
-  connectToStream(id);
+  connectToStream(hostId);
 }
 
 function connectToStream(hostId) {
-  const container = document.getElementById('videoContainer');
-  const video = document.getElementById('remoteVideo');
+  if (isViewer) return; // prevent double connect
+  isViewer = true;
 
-  document.getElementById('joinCard').querySelector('.btn-view').textContent = 'Connecting…';
+  const watchBtn = document.getElementById('watchBtn');
+  watchBtn.textContent = 'Connecting…';
+  watchBtn.disabled = true;
+
+  // Destroy any existing peer first
+  if (peer) { peer.destroy(); peer = null; }
 
   peer = new Peer(undefined, PEER_CONFIG);
 
   peer.on('open', () => {
-    const call = peer.call(hostId, new MediaStream()); // empty stream — we're viewer only
+    // Call broadcaster — send null stream (viewer only)
+    // We create a fake silent audio track so PeerJS doesn't complain
+    const silentStream = new MediaStream();
+    const call = peer.call(hostId, silentStream);
+
+    if (!call) {
+      toast('Could not reach broadcaster. Is the stream live?');
+      resetViewer();
+      return;
+    }
 
     call.on('stream', (remoteStream) => {
+      const video = document.getElementById('remoteVideo');
       video.srcObject = remoteStream;
-      container.classList.add('visible');
+      document.getElementById('videoContainer').classList.add('visible');
       document.getElementById('joinCard').classList.add('hidden');
       document.getElementById('broadcastCard').classList.add('hidden');
-      toast('Connected to stream!');
+      toast('Connected! Enjoy the stream 🎬');
     });
 
-    call.on('close', () => toast('Stream ended.'));
-    call.on('error', () => toast('Stream connection error.'));
+    call.on('close', () => {
+      toast('Stream ended by broadcaster.', 5000);
+    });
+
+    call.on('error', (err) => {
+      toast('Stream error: ' + err, 5000);
+      resetViewer();
+    });
+
+    // Timeout if no stream after 10s
+    setTimeout(() => {
+      if (!document.getElementById('videoContainer').classList.contains('visible')) {
+        toast('Timed out — is the stream live?', 5000);
+        resetViewer();
+      }
+    }, 10000);
   });
 
   peer.on('error', (err) => {
-    toast('Could not connect: ' + err.type);
-    document.getElementById('joinCard').querySelector('.btn-view').textContent = 'Watch Stream';
+    toast('Connection failed: ' + err.type, 5000);
+    resetViewer();
   });
+}
+
+function resetViewer() {
+  isViewer = false;
+  const watchBtn = document.getElementById('watchBtn');
+  watchBtn.textContent = 'Watch Stream';
+  watchBtn.disabled = false;
+  if (peer) { peer.destroy(); peer = null; }
 }
 
 // ─── AUTO-JOIN FROM URL ────────────────────────────────────────────
@@ -622,7 +361,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const watchId = params.get('watch');
   if (watchId) {
     document.getElementById('sessionInput').value = watchId;
-    connectToStream(watchId);
+    // Small delay to let PeerJS load
+    setTimeout(() => connectToStream(watchId), 500);
   }
 });
 </script>
